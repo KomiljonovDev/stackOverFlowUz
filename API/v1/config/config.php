@@ -11,7 +11,7 @@
 	    protected $hostName;
 	    protected $userName;
 	    protected $passCode;
-	    
+
 	    function dbmysqli() {
 	        $this -> connectionString = NULL;
 	        $this -> sqlQuery = NULL;

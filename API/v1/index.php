@@ -3,5 +3,5 @@
 	$db = new dbmysqli;
 	$db->dbConnect();
 	$class = new Post;
-	print_r($class);
+	print_r($class->getAllPost);
 ?>
