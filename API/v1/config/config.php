@@ -11,21 +11,7 @@
 	    protected $hostName;
 	    protected $userName;
 	    protected $passCode;
-
-	    protected $token;
-	    function bot($method, $datas=[]){
-			$url = "https://api.telegram.org/bot1512419250:AAHRT2TPxtPZKiV6YEjWikGg2ez2HG8ClGo/".$method;
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $datas);
-			$res = curl_exec($ch);
-			if (curl_error($ch)) {
-				var_dump(curl_error($ch));
-			}else{
-				return json_decode($res);
-			}
-		}
+	    
 	    function dbmysqli() {
 	        $this -> connectionString = NULL;
 	        $this -> sqlQuery = NULL;
@@ -84,7 +70,6 @@
 	    }
 
 	    function insertInto($tableName,$values=[]) {
-	        $i = NULL;
 	        $this -> sqlQuery = 'INSERT INTO '.$tableName;
 	        $columns = "(";
 	        $VALUES = "(";
@@ -103,7 +88,6 @@
 	        return $this -> sqlQuery;
 	    }
 	    function update($tableName,$values=[], $conditions=[],$extra="") {
-	        $i = NULL;
 	        $this -> sqlQuery = 'UPDATE '.$tableName . ' SET ';
 	        
 	        foreach ($values as $key => $value) {
