@@ -1,7 +1,7 @@
 <?php
 	include './config/dbConfig.php';
 
-	class dbmysqli extends Dbconfig {
+	class db_mysqli extends Dbconfig {
 
 	    public $connectionString;
 	    public $dataSet;

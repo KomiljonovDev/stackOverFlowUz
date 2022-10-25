@@ -1,7 +1,7 @@
 <?php
 
 	require_once './config/config.php';
-
+	require_once 'functions.php';
 	trait Helper
 	{
 		public $data;
@@ -23,7 +23,7 @@
 		}
 	}
 
-	class Post extends dbmysqli
+	class Post extends db_mysqli
 	{
 		use Helper;
 
