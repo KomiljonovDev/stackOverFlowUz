@@ -5,9 +5,6 @@
 
 	require_once 'helpers/classes.php';
 	
-	// $db = new dbmysqli;
-	// $db->dbConnect();
-	$class = new Post;
-	$class->dbConnect();
-	print_r($class->getPostsByBetween(1,10));
+	$post = new Post;
+	print_r($post->getPostsByBetween(1,10));
 ?>

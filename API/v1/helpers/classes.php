@@ -27,12 +27,14 @@
 	{
 		use Helper;
 
-		public $data;
-
 		public $post_id;
 		public $title;
 		public $body;
 
+		public function __construct()
+		{
+			$this->dbConnect();
+		}
 
 		public function getAllPost()
 		{
