@@ -11,7 +11,7 @@
 			$this->data = array();
 			$this->data['ok'] = false; 
 			$this->data['code'] = null; 
-			$this->data['message'] = "message"; 
+			$this->data['message'] = null; 
 			$this->data['result'] = []; 
 		}
 
@@ -27,47 +27,98 @@
 	{
 		use Helper;
 
-		public $post_id;
-		public $title;
-		public $body;
-
 		public function __construct()
 		{
 			$this->dbConnect();
+			$this->extract($_REQUEST);
 		}
 
 		public function getAllPost()
 		{
-			return $this->selectAll('posts');
+			$this->data['ok'] = true;	
+			$this->data['code'] = 200;	
+			$this->data['message'] = 'posts gived successfully';
+			foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+			return $this->data;
 		}
 
-		public function getPostsByBetween($start=1,$end=10)
+		public function getPostsByBetween()
 		{
-			return $this->selectWhere('posts',[
+			$from = isset($this->from) ? $this->from : 1; 
+			$to = isset($this->to) ? $this->to : 10; 
+			$this->data['ok'] = true;	
+			$this->data['code'] = 201;	
+			$this->data['message'] = 'posts gived successfully';
+			$posts = $this->selectWhere('posts',[
 				[
-					'id'=>$start,
+					'id'=>$from,
 					'cn'=>'>='
 				],
 				[
-					'id'=>$end,
+					'id'=>$to,
 					'cn'=>'<='
 				],
 			]);
+			foreach ($posts as $key => $value) $this->data['result'][$key] = $value;
+			return $this->data;
+		}
+
+		public function getPostsBySeenCount()
+		{
+			$limit = isset($this->limit) ? $this->limit : 10; 
+			$this->data['ok'] = true;	
+			$this->data['code'] = 201;	
+			$this->data['message'] = 'posts gived successfully';
+			$posts = $this->selectWhere('posts',[
+				[
+					'id'=>1,
+					'cn'=>'>='
+				],
+			], " ORDER BY viewed_count DESC LIMIT " . $limit);
+			foreach ($posts as $key => $value) $this->data['result'][$key] = $value;
+			return $this->data;
+		}
+
+		public function getPostById()
+		{
+			if (!isset($this->id)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'post id (id) is required';
+				return $this->data;
+			}
+			$post = $this->selectWhere('posts',[
+				[
+					'id'=>$this->id,
+					'cn'=>'='
+				],
+			]);
+			if ($post->num_rows) {
+				$this->data['ok'] = true;	
+				$this->data['code'] = 201;	
+				$this->data['message'] = 'post gived successfully';
+				foreach ($post as $key => $value) $this->data['result'][$key] = $value;
+				return $this->data;
+			}else{
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'post id is invalid';
+				return $this->data;
+			}
 		}
 
 		public function insertPost()
 		{
-			if (!$this->token) {
+
+			if (!isset($this->token)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'token is required';
 				return $this->data;
 			}
-			if (isManager($this->$token)) {
+			if (!isManager($this->token)) {
 				$this->data['code'] = 401;	
 				$this->data['message'] = 'token is invalid';
 				return $this->data;
 			}
-			if (!$this->title || !$this->body) {
+			if (!isset($this->title) || !isset($this->body)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'title and body are required';
 				return $this->data;
@@ -79,9 +130,135 @@
 				'created_at'=>strtotime('now'),
 				'updated_at'=>''
 			]);
-			return $this->getAllPost();
+			$this->data['ok'] = true;	
+			$this->data['code'] = 201;	
+			$this->data['message'] = 'post successfully inserted';
+			foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+			return $this->data;
 		}
 
+		public function updatePost()
+		{
+			if (!isset($this->token)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'token is required';
+				return $this->data;
+			}
+			if (!isManager($this->token)) {
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'token is invalid';
+				return $this->data;
+			}
+			if (!isset($this->id)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'post id (id) is required';
+				return $this->data;
+			}
+			$post = $this->selectWhere('posts',[
+				[
+					'id'=>$this->id,
+					'cn'=>'='
+				],
+			]);
+			if ($post->num_rows) {
+				$post = mysqli_fetch_assoc($post);
+				$this->title = isset($this->title) ? $this->title : $post['title'];
+				$this->body = isset($this->body) ? $this->body : $post['body'];
+				$this->update('posts',[
+					'title'=>$this->title,
+					'body'=>$this->body,
+					'updated_at'=>strtotime('now')
+				],[
+					'id'=>$this->id,
+					'cn'=>'='
+				]);
+				$this->data['ok'] = true;	
+				$this->data['code'] = 201;	
+				$this->data['message'] = 'post successfully updated';
+				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+				return $this->data;
+			}else{
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'post id is invalid';
+				return $this->data;
+			}
+		}
+
+		public function viewPost()
+		{
+			if (!isset($this->id)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'post id (id) is required';
+				return $this->data;
+			}
+			$post = $this->selectWhere('posts',[
+				[
+					'id'=>$this->id,
+					'cn'=>'='
+				],
+			]);
+			if ($post->num_rows) {
+				$post = mysqli_fetch_assoc($post);
+				$viewed_count = (int)$post['viewed_count'] + 1;
+				$this->update('posts',[
+					'viewed_count'=>$viewed_count,
+				],[
+					'id'=>$this->id,
+					'cn'=>'='
+				]);
+				$this->data['ok'] = true;	
+				$this->data['code'] = 201;	
+				$this->data['message'] = 'post viewed';
+				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+				return $this->data;
+			}else{
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'post id is invalid';
+				return $this->data;
+			}
+		}
+
+		public function deletePost()
+		{
+			if (!isset($this->token)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'token is required';
+				return $this->data;
+			}
+			if (!isManager($this->token)) {
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'token is invalid';
+				return $this->data;
+			}
+			if (!isset($this->id)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'post id (id) is required';
+				return $this->data;
+			}
+			$post = $this->selectWhere('posts',[
+				[
+					'id'=>$this->id,
+					'cn'=>'='
+				],
+			]);
+			if ($post->num_rows) {
+				$this->delete('posts',[
+					[
+						'id'=>$this->id,
+						'cn'=>'='
+					],
+				]);
+				$this->data['ok'] = true;	
+				$this->data['code'] = 200;	
+				$this->data['message'] = 'post successfully deleted';
+				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+				return $this->data;
+			}else{
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'post id is invalid';
+				return $this->data;
+			}
+		}
 	}
 
 

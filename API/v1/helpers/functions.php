@@ -1,6 +1,7 @@
 <?php
 	function isManager($token) {
-		return $this->selectWhere('admins'[
+		global $db;
+		return $db->selectWhere('admins',[
 			[
 				'token'=>$token,
 				'cn'=>'='
