@@ -7,11 +7,13 @@
 	header('Content-Type: application/json'); 
 	$data = [];
 	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-		require_once 'helpers/classes.php';
+		require_once 'helpers/Post.php';
+		require_once 'helpers/Comment.php';
 		$db = new db_mysqli;
 		$db->dbConnect();
 
 		$post = new Post;
+		$comment = new Comment;
 
 		$action = strtolower(trim(getenv('ORIG_PATH_INFO') ? : getenv('PATH_INFO'), '/'));
 		if ($action == 'insertpost') {
@@ -30,6 +32,16 @@
 			$data = $post->deletePost();
 		}else if($action == 'viewpost'){
 			$data = $post->viewPost();
+		}else if($action == 'insertcomment'){
+			$data = $comment->insertComment();
+		}else if($action == 'getcommentsbyid'){
+			$data = $comment->getCommentsById();
+		}else if($action == 'getcommentsbybetween'){
+			$data = $comment->getCommentsByBetween();
+		}else if($action == 'updatecomment'){
+			$data = $comment->updateComment();
+		}else if($action == 'deletecomment'){
+			$data = $comment->deleteComment();
 		}else if(false){
 
 		}else{

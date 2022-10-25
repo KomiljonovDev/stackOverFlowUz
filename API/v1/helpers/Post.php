@@ -2,26 +2,6 @@
 
 	require_once './config/config.php';
 	require_once 'functions.php';
-	trait Helper
-	{
-		public $data;
-
-		public function Help()
-		{
-			$this->data = array();
-			$this->data['ok'] = false; 
-			$this->data['code'] = null; 
-			$this->data['message'] = null; 
-			$this->data['result'] = []; 
-		}
-
-		public function extract($requests)
-		{
-			foreach ($requests as $key => $value) {
-				$this->$key = $value;
-			}
-		}
-	}
 
 	class Post extends db_mysqli
 	{
