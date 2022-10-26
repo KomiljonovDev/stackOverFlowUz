@@ -1,7 +1,7 @@
 <?php
 
 	require_once './config/config.php';
-	require_once 'functions.php';
+	require_once './helpers/functions.php';
 
 	class Comment extends db_mysqli
 	{
@@ -164,6 +164,13 @@
 				$this->data['message'] = 'comment_id is invalid';
 				return $this->data;
 			}
+			$user = mysqli_fetch_assoc($user);
+			$comment = mysqli_fetch_assoc($comment);
+			if ($user['id'] != $comment['user_id']) {
+				$this->data['code'] = 403;	
+				$this->data['message'] = 'Comment does not belong to this user';
+				return $this->data;
+			}
 			if (!isset($this->comment)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'comment body (comment) is required';
@@ -179,7 +186,6 @@
 			$this->data['ok'] = true;	
 			$this->data['code'] = 201;	
 			$this->data['message'] = 'Comment successfully updated';
-			$comment = mysqli_fetch_assoc($comment);
 			$post_comments = $this->selectWhere('post_comments',[
 				[
 					'post_id'=>$comment['post_id'],
@@ -224,6 +230,13 @@
 				$this->data['message'] = 'comment_id is invalid';
 				return $this->data;
 			}
+			$user = mysqli_fetch_assoc($user);
+			$comment = mysqli_fetch_assoc($comment);
+			if ($user['id'] != $comment['user_id']) {
+				$this->data['code'] = 403;	
+				$this->data['message'] = 'Comment does not belong to this user';
+				return $this->data;
+			}
 			$this->delete('post_comments',[
 				[
 					'id'=>$this->comment_id,
@@ -233,7 +246,6 @@
 			$this->data['ok'] = true;	
 			$this->data['code'] = 200;	
 			$this->data['message'] = 'comment successfully deleted';
-			$comment = mysqli_fetch_assoc($comment);
 			$post_comments = $this->selectWhere('post_comments',[
 				[
 					'post_id'=>$comment['post_id'],

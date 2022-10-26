@@ -7,13 +7,15 @@
 	header('Content-Type: application/json'); 
 	$data = [];
 	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-		require_once 'helpers/Post.php';
-		require_once 'helpers/Comment.php';
+		require_once 'helpers/Models/Post.php';
+		require_once 'helpers/Models/Comment.php';
+		require_once 'helpers/Models/Question.php';
 		$db = new db_mysqli;
 		$db->dbConnect();
 
 		$post = new Post;
 		$comment = new Comment;
+		$question = new Question;
 
 		$action = strtolower(trim(getenv('ORIG_PATH_INFO') ? : getenv('PATH_INFO'), '/'));
 		if ($action == 'insertpost') {
@@ -42,6 +44,14 @@
 			$data = $comment->updateComment();
 		}else if($action == 'deletecomment'){
 			$data = $comment->deleteComment();
+		}else if($action == 'insertquestion'){
+			$data = $question->insertQuestion();
+		}else if($action == 'updatequestion'){
+			$data = $question->updateQuestion();
+		}else if($action == 'getquestionsbybetween'){
+			$data = $question->getQuestionsByBetween();
+		}else if($action == 'deletequestion'){
+			$data = $question->deleteQuestion();
 		}else if(false){
 
 		}else{

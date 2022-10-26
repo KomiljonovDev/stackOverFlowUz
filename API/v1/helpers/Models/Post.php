@@ -1,7 +1,7 @@
 <?php
 
 	require_once './config/config.php';
-	require_once 'functions.php';
+	require_once './helpers/functions.php';
 
 	class Post extends db_mysqli
 	{
