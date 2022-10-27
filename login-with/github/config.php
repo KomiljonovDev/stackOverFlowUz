@@ -8,6 +8,7 @@
 		session_start();
 	}
 
+
 	require_once 'Models/dbConfig.php';
 	require_once 'Models/githubOauthClient.php';
 
