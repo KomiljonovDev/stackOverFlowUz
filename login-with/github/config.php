@@ -1,8 +1,8 @@
 <?php
 	
-	define('CLIENT_ID', 'e06da182073046ab9172');
-	define('CLIENT_SECRET', 'c25cb41a3963daf844d8f134a07ac01eea745419');
-	define('REDIRECT_URL', 'https://komiljonovdev.uz/okdeveloper/sites/stackOverFlowUz/login-with-github/');
+	define('CLIENT_ID', '<CLIENT_ID>');
+	define('CLIENT_SECRET', '<CLIENT_SECRET>');
+	define('REDIRECT_URL', '<REDIRECT_URL>');
 
 	if (!session_id()) {
 		session_start();
