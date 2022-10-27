@@ -11,8 +11,6 @@
 		require_once 'helpers/Models/Comment.php';
 		require_once 'helpers/Models/Question.php';
 		require_once 'helpers/Models/Answer.php';
-		$db = new db_mysqli;
-		$db->dbConnect();
 
 		$post = new Post;
 		$comment = new Comment;
