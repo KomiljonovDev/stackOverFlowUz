@@ -147,7 +147,7 @@
 			$this->data['ok'] = false; 
 			$this->data['code'] = null; 
 			$this->data['message'] = null; 
-			$this->data['result'] = []; 
+			$this->data['result'] = [];
 		}
 
 		public function extract($requests)
@@ -155,6 +155,40 @@
 			foreach ($requests as $key => $value) {
 				$this->$key = $value;
 			}
+		}
+		public function isManager($token) {
+			return $this->selectWhere('admins',[
+				[
+					'token'=>$token,
+					'cn'=>'='
+				]
+			])->num_rows;
+		}
+		public function checkPassword($pwd, $errors) {
+		    $errors_init = $errors;
+
+		    if (strlen($pwd) < 8) {
+		        $errors[] = "Password too short!";
+		    }
+
+		    if (!preg_match("#[0-9]+#", $pwd)) {
+		        $errors[] = "Password must include at least one number!";
+		    }
+
+		    if (!preg_match("#[a-z]+#", $pwd)) {
+		        $errors[] = "Password must include at least one lower case letter!";
+		    }
+
+		    if (!preg_match("#[A-Z]+#", $pwd)) {
+		        $errors[] = "Password must include at least one upper case letter!";
+		    }
+		    if ($errors) {
+			    $this->data['ok'] = false;
+			    $this->data['code'] = 401;
+			    $this->data['message'] = 'password is invalid';
+			    $this->data['errors'] = $errors;
+		    }
+		    return ($errors == $errors_init) ? ['ok'=>true,'result'=>[]] : ['ok'=>false,'result'=>$errors];
 		}
 	}
 ?>

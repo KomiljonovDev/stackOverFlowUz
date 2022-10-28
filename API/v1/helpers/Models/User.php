@@ -1,6 +1,6 @@
 <?php
 
-	class Post extends db_mysqli
+	class User extends db_mysqli
 	{
 		use Helper;
 
@@ -19,98 +19,87 @@
 			return $this->data;
 		}
 
-		public function getPostsByBetween()
+		public function signUpWithEmail()
 		{
-			$from = isset($this->from) ? $this->from : 1; 
-			$to = isset($this->to) ? $this->to : 10; 
-			$this->data['ok'] = true;	
-			$this->data['code'] = 201;	
-			$this->data['message'] = 'posts gived successfully';
-			$posts = $this->selectWhere('posts',[
-				[
-					'id'=>$from,
-					'cn'=>'>='
-				],
-				[
-					'id'=>$to,
-					'cn'=>'<='
-				],
-			]);
-			foreach ($posts as $key => $value) $this->data['result'][$key] = $value;
-			return $this->data;
-		}
 
-		public function getPostsBySeenCount()
-		{
-			$limit = isset($this->limit) ? $this->limit : 10; 
-			$this->data['ok'] = true;	
-			$this->data['code'] = 201;	
-			$this->data['message'] = 'posts gived successfully';
-			$posts = $this->selectWhere('posts',[
-				[
-					'id'=>1,
-					'cn'=>'>='
-				],
-			], " ORDER BY viewed_count DESC LIMIT " . $limit);
-			foreach ($posts as $key => $value) $this->data['result'][$key] = $value;
-			return $this->data;
-		}
-
-		public function getPostById()
-		{
-			if (!isset($this->id)) {
+			if (!isset($this->username)) {
 				$this->data['code'] = 400;	
-				$this->data['message'] = 'post id (id) is required';
+				$this->data['message'] = 'username is required';
 				return $this->data;
 			}
-			$post = $this->selectWhere('posts',[
+			$this->username = trim($this->username);
+			$user_name = $this->selectWhere('users',[
 				[
-					'id'=>$this->id,
+					'username'=>$this->username,
 					'cn'=>'='
-				],
+				]
 			]);
-			if ($post->num_rows) {
-				$this->data['ok'] = true;	
-				$this->data['code'] = 201;	
-				$this->data['message'] = 'post gived successfully';
-				foreach ($post as $key => $value) $this->data['result'][$key] = $value;
-				return $this->data;
-			}else{
-				$this->data['code'] = 401;	
-				$this->data['message'] = 'post id is invalid';
+			if ($user_name->num_rows) {
+				$this->data['code'] = 403;
+				$this->data['message'] = 'username already exists';
 				return $this->data;
 			}
-		}
 
-		public function insertPost()
-		{
+			if (!isset($this->email)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'email is required';
+				return $this->data;
+			}
+			$this->email = trim($this->email);
+			$user_email = $this->selectWhere('users',[
+				[
+					'email'=>$this->email,
+					'cn'=>'='
+				]
+			]);
+			if ($user_email->num_rows) {
+				$this->data['code'] = 403;
+				$this->data['message'] = 'email already exists';
+				return $this->data;
+			}
 
-			if (!isset($this->token)) {
+			if (!isset($this->password)) {
 				$this->data['code'] = 400;	
-				$this->data['message'] = 'token is required';
+				$this->data['message'] = 'password is required';
 				return $this->data;
 			}
-			if (!$this->isManager($this->token)) {
-				$this->data['code'] = 401;	
-				$this->data['message'] = 'token is invalid';
+
+			if (!$this->checkPassword($this->password,[])['ok']) {
 				return $this->data;
 			}
-			if (!isset($this->title) || !isset($this->body)) {
+
+			if (!isset($this->name) || !isset($this->lastname)) {
 				$this->data['code'] = 400;	
-				$this->data['message'] = 'title and body are required';
+				$this->data['message'] = 'name and lastname are required';
 				return $this->data;
 			}
-			$this->insertInto('posts',[
-				'title'=>$this->title,
-				'body'=>$this->body,
-				'viewed_count'=>1,
+			$this->insertInto('users',[
+				'token'=>md5(uniqid($this->username,true)),
+				'username'=>$this->username,
+				'email'=>$this->email,
+				'password'=>md5($this->password),
+				'name'=>$this->name,
+				'lastname'=>$this->lastname,
+				'bio'=>isset($this->lastname) ? $this->lastname : '',
+				'locale'=>isset($this->location) ? $this->location : '',
 				'created_at'=>strtotime('now'),
 				'updated_at'=>''
 			]);
 			$this->data['ok'] = true;	
 			$this->data['code'] = 201;	
-			$this->data['message'] = 'post successfully inserted';
-			foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
+			$this->data['message'] = 'registered successfully';
+			$user = $this->selectWhere('users',[
+				[
+					'username'=>$this->username,
+					'cn'=>'='
+				],
+				[
+					'password'=>md5($this->password),
+					'cn'=>'='
+				]
+			]);
+			$user = mysqli_fetch_assoc($user);
+			foreach ($user as $key => $value) $this->data['result'][$key] = $value;
 			return $this->data;
 		}
 

@@ -7,15 +7,18 @@
 	header('Content-Type: application/json'); 
 	$data = [];
 	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+		require_once './config/config.php';
 		require_once 'helpers/Models/Post.php';
 		require_once 'helpers/Models/Comment.php';
 		require_once 'helpers/Models/Question.php';
 		require_once 'helpers/Models/Answer.php';
+		require_once 'helpers/Models/User.php';
 
 		$post = new Post;
 		$comment = new Comment;
 		$question = new Question;
 		$answer = new Answer;
+		$user = new User;
 
 		$action = strtolower(trim(getenv('ORIG_PATH_INFO') ? : getenv('PATH_INFO'), '/'));
 		if ($action == 'insertpost') { // POST
@@ -60,6 +63,8 @@
 			$data = $answer->getAnswersById();
 		}else if($action == 'getanswersbybetween'){
 			$data = $answer->getAnswersByBetween();
+		}else if($action == 'signupwithemail'){
+			$data = $user->signUpWithEmail();
 		}else if(false){
 
 		}else{
@@ -72,5 +77,6 @@
 		$data['code'] = 405;
 		$data['message'] = 'Method not allowed. Allowed Method: POST';
 	}
-		echo json_encode($data,JSON_PRETTY_PRINT);
+	unset($data['result']['password']);
+	echo json_encode($data,JSON_PRETTY_PRINT);
 ?>
