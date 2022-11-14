@@ -8,15 +8,7 @@
 		{
 			$this->dbConnect();
 			$this->extract($_REQUEST);
-		}
-
-		public function getAllPost()
-		{
-			$this->data['ok'] = true;	
-			$this->data['code'] = 200;	
-			$this->data['message'] = 'posts gived successfully';
-			foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
-			return $this->data;
+			$this->help();
 		}
 
 		public function signUpWithEmail()
@@ -25,6 +17,11 @@
 			if (!isset($this->username)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'username is required';
+				return $this->data;
+			}
+			if (!preg_match('/^[a-z\d_]{5,20}$/i', $this->username)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'username is invalid';
 				return $this->data;
 			}
 			$this->username = trim($this->username);
@@ -43,6 +40,11 @@
 			if (!isset($this->email)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'email is required';
+				return $this->data;
+			}
+			if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'email is invalid';
 				return $this->data;
 			}
 			$this->email = trim($this->email);
@@ -103,127 +105,213 @@
 			return $this->data;
 		}
 
-		public function updatePost()
+		public function updateUserProfile()
 		{
 			if (!isset($this->token)) {
 				$this->data['code'] = 400;	
 				$this->data['message'] = 'token is required';
 				return $this->data;
 			}
-			if (!$this->isManager($this->token)) {
+			if (!$this->isUser($this->token)) {
 				$this->data['code'] = 401;	
 				$this->data['message'] = 'token is invalid';
 				return $this->data;
 			}
-			if (!isset($this->id)) {
-				$this->data['code'] = 400;	
-				$this->data['message'] = 'post id (id) is required';
-				return $this->data;
-			}
-			$post = $this->selectWhere('posts',[
+			$user = $this->selectWhere('users',[
 				[
-					'id'=>$this->id,
+					'token'=>$this->token,
 					'cn'=>'='
 				],
 			]);
-			if ($post->num_rows) {
-				$post = mysqli_fetch_assoc($post);
-				$this->title = isset($this->title) ? $this->title : $post['title'];
-				$this->body = isset($this->body) ? $this->body : $post['body'];
-				$this->update('posts',[
-					'title'=>$this->title,
-					'body'=>$this->body,
-					'updated_at'=>strtotime('now')
-				],[
-					'id'=>$this->id,
-					'cn'=>'='
-				]);
-				$this->data['ok'] = true;	
-				$this->data['code'] = 201;	
-				$this->data['message'] = 'post successfully updated';
-				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
-				return $this->data;
-			}else{
-				$this->data['code'] = 401;	
-				$this->data['message'] = 'post id is invalid';
-				return $this->data;
-			}
-		}
-
-		public function viewPost()
-		{
-			if (!isset($this->id)) {
-				$this->data['code'] = 400;	
-				$this->data['message'] = 'post id (id) is required';
-				return $this->data;
-			}
-			$post = $this->selectWhere('posts',[
-				[
-					'id'=>$this->id,
-					'cn'=>'='
-				],
-			]);
-			if ($post->num_rows) {
-				$post = mysqli_fetch_assoc($post);
-				$viewed_count = (int)$post['viewed_count'] + 1;
-				$this->update('posts',[
-					'viewed_count'=>$viewed_count,
-				],[
-					'id'=>$this->id,
-					'cn'=>'='
-				]);
-				$this->data['ok'] = true;	
-				$this->data['code'] = 201;	
-				$this->data['message'] = 'post viewed';
-				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
-				return $this->data;
-			}else{
-				$this->data['code'] = 401;	
-				$this->data['message'] = 'post id is invalid';
-				return $this->data;
-			}
-		}
-
-		public function deletePost()
-		{
-			if (!isset($this->token)) {
-				$this->data['code'] = 400;	
-				$this->data['message'] = 'token is required';
-				return $this->data;
-			}
-			if (!$this->isManager($this->token)) {
-				$this->data['code'] = 401;	
-				$this->data['message'] = 'token is invalid';
-				return $this->data;
-			}
-			if (!isset($this->id)) {
-				$this->data['code'] = 400;	
-				$this->data['message'] = 'post id (id) is required';
-				return $this->data;
-			}
-			$post = $this->selectWhere('posts',[
-				[
-					'id'=>$this->id,
-					'cn'=>'='
-				],
-			]);
-			if ($post->num_rows) {
-				$this->delete('posts',[
+			if ($user->num_rows) {
+				if (isset($this->username)) {
+					if (!preg_match('/^[a-z\d_]{5,20}$/i', $this->username)) {
+						$this->data['code'] = 400;	
+						$this->data['message'] = 'username is invalid';
+						return $this->data;
+					}
+				}
+				if (isset($this->email)) {
+					if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+						$this->data['code'] = 400;	
+						$this->data['message'] = 'email is invalid';
+						return $this->data;
+					}
+				}
+				$user = mysqli_fetch_assoc($user);
+				$this->username = isset($this->username) ? $this->username : $user['username'];
+				$this->email = isset($this->email) ? $this->email : $user['email'];
+				$this->name = isset($this->name) ? $this->name : $user['name'];
+				$this->lastname = isset($this->lastname) ? $this->lastname : $user['lastname'];
+				$this->avatar_url = $user['avatar_url'];
+				$this->bio = isset($this->bio) ? $this->bio : $user['bio'];
+				$this->locale = isset($this->locale) ? $this->locale : $user['locale'];
+				$username = $this->selectWhere('users',[
 					[
-						'id'=>$this->id,
+						'username'=>$this->username,
 						'cn'=>'='
 					],
-				]);
-				$this->data['ok'] = true;	
-				$this->data['code'] = 200;	
-				$this->data['message'] = 'post successfully deleted';
-				foreach ($this->selectAll('posts') as $key => $value) $this->data['result'][$key] = $value;
-				return $this->data;
+				], " AND token!='" . $this->token . "'");
+				if (!$username->num_rows) {
+					$email = $this->selectWhere('users',[
+						[
+							'email'=>$this->email,
+							'cn'=>'='
+						],
+					], " AND token!='" . $this->token . "'");
+					if (!$email->num_rows) {
+						if (isset($_FILES['avatar'])) {
+							$allowed = ['jpg','png','jpeg','gif'];
+							$pathinfo = pathinfo($_FILES['avatar']['name'],PATHINFO_EXTENSION);
+							if (!in_array($pathinfo, $allowed)) {
+								$this->data['code'] = 401;	
+								$this->data['message'] = 'file type is invalid, allowed file types: jpg,png,jpeg,gif';
+								return $this->data;
+							}
+							$filename = md5(uniqid($_FILES['avatar']['name'],true)) . '.' . $pathinfo;
+							move_uploaded_file($_FILES['avatar']['tmp_name'], '../uploads/user/' . $filename);
+							$this->avatar_url = $this->projectApiPATH . 'uploads/user/' . $filename;
+							$oldFile = explode("uploads/user/", $user['avatar_url'])[1];
+							if (file_exists('../uploads/user/' . $oldFile)) {
+								unlink('../uploads/user/' . $oldFile);
+							}
+						}
+						$this->update('users',[
+							'username'=>$this->username,
+							'email'=>$this->email,
+							'name'=>$this->name,
+							'lastname'=>$this->lastname,
+							'avatar_url'=>$this->avatar_url,
+							'bio'=>$this->bio,
+							'locale'=>$this->locale,
+							'updated_at'=>strtotime('now')
+						],[
+							'token'=>$this->token,
+							'cn'=>'='
+						]);
+						$this->data['ok'] = true;	
+						$this->data['code'] = 200;	
+						$this->data['message'] = 'user successfully updated';
+						$user = mysqli_fetch_assoc($this->selectWhere('users',[
+							[
+								'token'=>$this->token,
+								'cn'=>'='
+							],
+						]));
+						foreach ($user as $key => $value) $this->data['result'][$key] = $value;
+						return $this->data;
+					}else{
+						$this->data['code'] = 403;
+						$this->data['message'] = 'email is not available';
+						return $this->data;
+					}
+				}else{
+					$this->data['code'] = 403;
+					$this->data['message'] = 'username is not available';
+					return $this->data;
+				}
 			}else{
 				$this->data['code'] = 401;	
-				$this->data['message'] = 'post id is invalid';
+				$this->data['message'] = 'user token is invalid';
 				return $this->data;
 			}
+		}
+
+		public function updateUserPassword()
+		{
+			if (!isset($this->token)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'token is required';
+				return $this->data;
+			}
+			if (!$this->isUser($this->token)) {
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'token is invalid';
+				return $this->data;
+			}
+			if (!isset($this->currentpassword)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'currentpassword is required';
+				return $this->data;
+			}
+			if (!isset($this->newpassword)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'newpassword is required';
+				return $this->data;
+			}
+			if (!$this->checkPassword($this->newpassword,[])['ok']) {
+				return $this->data;
+			}
+			$user = $this->selectWhere('users',[
+				[
+					'token'=>$this->token,
+					'cn'=>'='
+				],
+			]);
+			if ($user->num_rows) {
+				$user = mysqli_fetch_assoc($user);
+				if ($user['password'] == md5($this->currentpassword)) {
+					$this->update('users',[
+						'password'=>md5($this->newpassword),
+						'updated_at'=>strtotime('now')
+					],[
+						'token'=>$this->token,
+						'cn'=>'='
+					]);
+					$user = $this->selectWhere('users',[
+						[
+							'token'=>$this->token,
+							'cn'=>'='
+						],
+					]);
+					$user = mysqli_fetch_assoc($user);
+					$this->data['ok'] = true;	
+					$this->data['code'] = 200;	
+					$this->data['message'] = 'user password successfully updated';
+					foreach ($user as $key => $value) $this->data['result'][$key] = $value;
+					return $this->data;
+				}
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'currentpassword is invalid';
+				return $this->data;
+			}
+			$this->data['code'] = 401;	
+			$this->data['message'] = 'user token is invalid';
+			return $this->data;
+		}
+
+		public function deleteUserAccount()
+		{
+			if (!isset($this->token)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'token is required';
+				return $this->data;
+			}
+			if (!$this->isUser($this->token)) {
+				$this->data['code'] = 401;	
+				$this->data['message'] = 'token is invalid';
+				return $this->data;
+			}
+			$user = mysqli_fetch_assoc($this->selectWhere('users',[
+				[
+					'token'=>$this->token,
+					'cn'=>'='
+				]
+			]));
+			$avatar = explode("uploads/user/", $user['avatar_url'])[1];
+			if (file_exists('../uploads/user/' . $avatar)) {
+				unlink('../uploads/user/' . $avatar);
+			}
+			$this->delete('users',[
+				[
+					'token'=>$this->token,
+					'cn'=>'='
+				],
+			]);
+			$this->data['ok'] = true;	
+			$this->data['code'] = 200;	
+			$this->data['message'] = 'user account successfully deleted';
+			return $this->data;
 		}
 	}
 

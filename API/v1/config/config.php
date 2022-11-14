@@ -139,6 +139,7 @@
 
 	trait Helper
 	{
+		protected $projectApiPATH = 'https://komiljonovdev.uz/okdeveloper/sites/stackOverFlowUz/API/';
 		public $data;
 
 		public function Help()
@@ -149,7 +150,7 @@
 			$this->data['message'] = null; 
 			$this->data['result'] = [];
 		}
-
+		
 		public function extract($requests)
 		{
 			foreach ($requests as $key => $value) {
@@ -158,6 +159,14 @@
 		}
 		public function isManager($token) {
 			return $this->selectWhere('admins',[
+				[
+					'token'=>$token,
+					'cn'=>'='
+				]
+			])->num_rows;
+		}
+		public function isUser($token) {
+			return $this->selectWhere('users',[
 				[
 					'token'=>$token,
 					'cn'=>'='

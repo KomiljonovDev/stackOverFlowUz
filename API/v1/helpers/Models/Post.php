@@ -8,6 +8,7 @@
 		{
 			$this->dbConnect();
 			$this->extract($_REQUEST);
+			$this->help();
 		}
 
 		public function getAllPost()

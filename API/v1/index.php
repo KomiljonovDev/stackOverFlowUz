@@ -65,6 +65,12 @@
 			$data = $answer->getAnswersByBetween();
 		}else if($action == 'signupwithemail'){
 			$data = $user->signUpWithEmail();
+		}else if($action == 'updateuserprofile'){
+			$data = $user->updateUserProfile();
+		}else if($action == 'updateuserpassword'){
+			$data = $user->updateUserPassword();
+		}else if($action == 'deleteuseraccount'){
+			$data = $user->deleteUserAccount();
 		}else if(false){
 
 		}else{
