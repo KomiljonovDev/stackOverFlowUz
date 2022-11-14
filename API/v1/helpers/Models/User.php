@@ -280,6 +280,47 @@
 			return $this->data;
 		}
 
+		public function logInWithEmail()
+		{
+			if (!isset($this->username) && !isset($this->email)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'username or email is required';
+				return $this->data;
+			}
+			if (!isset($this->password)) {
+				$this->data['code'] = 400;	
+				$this->data['message'] = 'password is required';
+				return $this->data;
+			}
+			$key = isset($this->email) ? 'email' : 'username';
+			$user = $this->selectWhere('users',[
+				[
+					$key=>isset($this->email) ? $this->email : $this->username,
+					'cn'=>'='
+				],
+				[
+					'password'=>md5($this->password),
+					'cn'=>'='
+				]
+			]);
+			if ($user->num_rows) {
+				$user = mysqli_fetch_assoc($user);
+				if ($user['password'] === md5($this->password)) {
+					$this->data['ok'] = true;
+					$this->data['code'] = 200;
+					$this->data['message'] = 'login successfully';
+					foreach ($user as $key => $value) $this->data['result'][$key] = $value;
+					return $this->data;
+				}
+				$this->data['code'] = 401;
+				$this->data['message'] = 'password is invalid';
+				return $this->data;
+			}
+			$this->data['code'] = 401;
+			$this->data['message'] = 'username or password are invalid';
+			return $this->data;
+		}
+
 		public function deleteUserAccount()
 		{
 			if (!isset($this->token)) {

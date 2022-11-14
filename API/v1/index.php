@@ -69,6 +69,8 @@
 			$data = $user->updateUserProfile();
 		}else if($action == 'updateuserpassword'){
 			$data = $user->updateUserPassword();
+		}else if($action == 'loginwithemail'){
+			$data = $user->logInWithEmail();
 		}else if($action == 'deleteuseraccount'){
 			$data = $user->deleteUserAccount();
 		}else if(false){
