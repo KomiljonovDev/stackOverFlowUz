@@ -7,9 +7,9 @@
         protected $token;
         function Dbconfig() {
             $this -> serverName = 'localhost';
-            $this -> userName = 'komiljonov_db18';
-            $this -> passCode = 'st6BWHM33WjiGfqd';
-            $this -> dbName = 'komiljonov_db18';
+            $this -> userName = 'usernmae';
+            $this -> passCode = 'password';
+            $this -> dbName = 'dbname';
         }
     }
 ?>
